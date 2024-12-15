@@ -1,0 +1,10 @@
+services:
+    ansible:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        command: sleep infinity
+        volumes:
+            - ${HOST_ANSIBLE_VAULT_PASSWORD_FILE}:/app_data/ansible_vault_password
+            - ./:/workspace
+        network_mode: host
