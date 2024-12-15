@@ -1,0 +1,8 @@
+- name: Docker Volumes
+  ansible.builtin.import_playbook: docker_volumes.yml
+
+- name: Docker Networks
+  ansible.builtin.import_playbook: docker_networks.yml
+
+- name: Docker Containers
+  ansible.builtin.import_playbook: docker_containers.yml

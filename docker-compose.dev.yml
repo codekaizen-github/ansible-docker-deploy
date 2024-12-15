@@ -5,6 +5,7 @@ services:
             dockerfile: Dockerfile
         command: sleep infinity
         volumes:
-            - ${HOST_ANSIBLE_VAULT_PASSWORD_FILE}:/app_data/ansible_vault_password
+            - ${HOST_AUTHORIZED_SSH_PRIVATE_KEY}:/root/.ssh/id_rsa
+            - ${HOST_ANSIBLE_INVENTORY_FILE}:/workspace/ansible/inventory/hosts
             - ./:/workspace
         network_mode: host

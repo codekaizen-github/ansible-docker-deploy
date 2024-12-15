@@ -1,0 +1,34 @@
+---
+- name: Create Docker Networks
+  hosts: "{{ hosts_override | default('docker_networks') }}"
+
+  tasks:
+    - name: Create Docker network
+      community.docker.docker_network:
+        name: "{{ item.name }}"
+        state: present
+        driver: "{{ item.driver | default('bridge') }}"
+        driver_options: "{{ item.driver_options | default({}) }}"
+        api_version: "{{ item.api_version | default('auto') }}"
+        appends: "{{ item.appends | default(false) }}"
+        attachable: "{{ item.attachable | default(false) }}"
+        ca_cert: "{{ item.ca_cert | default(omit) }}"
+        client_cert: "{{ item.client_cert | default(omit) }}"
+        client_key: "{{ item.client_key | default(omit) }}"
+        connected: "{{ item.connected | default([]) }}"
+        debug: "{{ item.debug | default(false) }}"
+        docker_host: "{{ item.docker_host | default('unix:///var/run/docker.sock') }}"
+        labels: "{{ item.labels | default(omit) }}"
+        enable_ipv6: "{{ item.enable_ipv6 | default(false) }}"
+        force: "{{ item.force | default(false) }}"
+        internal: "{{ item.internal | default(false) }}"
+        ipam_config: "{{ item.ipam_config | default([]) }}"
+        ipam_driver: "{{ item.ipam_driver | default(omit) }}"
+        ipam_driver_options: "{{ item.ipam_driver_options | default(omit) }}"
+        scope: "{{ item.scope | default('local') }}"
+        ssl_version: "{{ item.ssl_version | default(omit) }}"
+        timeout: "{{ item.timeout | default(60) }}"
+        tls: "{{ item.tls | default(false) }}"
+        tls_hostname: "{{ item.tls_hostname | default('localhost') }}"
+        validate_certs: "{{ item.validate_certs | default(false) }}"
+      loop: "{{ docker_networks }}"

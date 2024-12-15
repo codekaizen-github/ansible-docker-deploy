@@ -1,0 +1,26 @@
+---
+- name: Create Docker Volumes
+  hosts: "{{ hosts_override | default('docker_volumes') }}"
+
+  tasks:
+    - name: Create Docker volume
+      community.docker.docker_volume:
+        name: "{{ item.name }}"
+        state: present
+        driver: "{{ item.driver | default('local') }}"
+        driver_options: "{{ item.driver_options | default({}) }}"
+        api_version: "{{ item.api_version | default('auto') }}"
+        ca_path: "{{ item.ca_path | default(omit) }}"
+        client_cert: "{{ item.client_cert | default(omit) }}"
+        client_key: "{{ item.client_key | default(omit) }}"
+        debug: "{{ item.debug | default(false) }}"
+        docker_host: "{{ item.docker_host | default('unix:///var/run/docker.sock') }}"
+        labels: "{{ item.labels | default(omit) }}"
+        recreate: "{{ item.recreate | default('never') }}"
+        ssl_version: "{{ item.ssl_version | default(omit) }}"
+        timeout: "{{ item.timeout | default(60) }}"
+        tls: "{{ item.tls | default(false) }}"
+        tls_hostname: "{{ item.tls_hostname | default(omit) }}"
+        use_ssh_client: "{{ item.use_ssh_client | default(false) }}"
+        validate_certs: "{{ item.validate_certs | default(false) }}"
+      loop: "{{ docker_volumes }}"

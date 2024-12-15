@@ -8,6 +8,8 @@ RUN apk add --update --no-cache \
 
 COPY . /workspace
 
+RUN ANSIBLE_CONFIG=/workspace/ansible/ansible.cfg ansible-galaxy install -r /workspace/ansible/requirements.yml
+
 ENTRYPOINT []
 CMD ["ansible", "--help"]
 
