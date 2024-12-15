@@ -1,0 +1,32 @@
+- name: Assert that item is defined
+  assert:
+    that:
+      - item is defined
+      # - name: Use Docker CLI to list all containers with a specific tag
+      #   shell: docker ps --format "{{ '{{' }}.ID{{ '}}' }}"
+      #   register: docker_containers
+      #   changed_when: false
+      #   failed_when: false
+- name: Use Docker CLI to list all containers with a specific tag
+  shell: docker ps --filter "label=org.codekaizen.application=codekaizen-website" --filter "label=org.codekaizen.service=wordpress" --format "{{ '{{' }}.ID{{ '}}' }}"
+  register: docker_containers_existing
+  changed_when: false
+  failed_when: false
+
+- name: Debug
+  debug:
+    var: docker_containers_existing
+
+- name: Create Docker containers
+  ansible.builtin.include_tasks: tasks/docker_container.yml
+  loop: "{{ range(1, n+1) }}"
+  loop_control:
+    loop_var: replica_number
+  vars:
+    n: "{{ item.replicas | default(1) }}"
+    item: "{{ item }}"
+# - name: Foreach docker_container_existing, stop the container
+#   community.docker.docker_container:
+#       name: "{{ item }}"
+#       state: absent
+#   loop: "{{ docker_containers_existing.stdout_lines }}"

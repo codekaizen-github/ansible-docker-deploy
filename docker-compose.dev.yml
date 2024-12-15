@@ -6,6 +6,6 @@ services:
         command: sleep infinity
         volumes:
             - ${HOST_AUTHORIZED_SSH_PRIVATE_KEY}:/root/.ssh/id_rsa
-            - ${HOST_ANSIBLE_INVENTORY_FILE}:/workspace/ansible/inventory/hosts
+            - ${HOST_ANSIBLE_INVENTORY_FILE}:/workspace/ansible/inventory/hosts.yml
             - ./:/workspace
         network_mode: host
