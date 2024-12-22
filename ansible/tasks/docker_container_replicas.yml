@@ -1,14 +1,13 @@
-- name: Assert that item is defined
+- name: Assert that required vars are defined
   assert:
     that:
-      - item is defined
-      # - name: Use Docker CLI to list all containers with a specific tag
-      #   shell: docker ps --format "{{ '{{' }}.ID{{ '}}' }}"
-      #   register: docker_containers
-      #   changed_when: false
-      #   failed_when: false
+      - docker_container is defined
+      - required_docker_label is defined
+      - required_docker_label is string
+      - required_docker_label | length > 0
+
 - name: Use Docker CLI to list all containers with a specific tag
-  shell: docker ps --filter "label=org.codekaizen.application=codekaizen-website" --filter "label=org.codekaizen.service=wordpress" --format "{{ '{{' }}.ID{{ '}}' }}"
+  shell: docker ps -a --filter "label={{ required_docker_label }}" {{ docker_container.filters_string | default('') }} --format \{\{.Names\}\}
   register: docker_containers_existing
   changed_when: false
   failed_when: false
@@ -19,14 +18,19 @@
 
 - name: Create Docker containers
   ansible.builtin.include_tasks: tasks/docker_container.yml
-  loop: "{{ range(1, n+1) }}"
+  # loop: "{{ range(1, docker_container.replica_count + 1) }}"
+  loop: "{{ range(1, replica_count|int + 1|int ) }}"
   loop_control:
     loop_var: replica_number
   vars:
-    n: "{{ item.replicas | default(1) }}"
-    item: "{{ item }}"
-# - name: Foreach docker_container_existing, stop the container
-#   community.docker.docker_container:
-#       name: "{{ item }}"
-#       state: absent
-#   loop: "{{ docker_containers_existing.stdout_lines }}"
+    replica_count: "{{ docker_container.replica_count | default(1) | int }}"
+    # pass in docker_container. but change the name to append the replica_number
+    item: "{{ docker_container | combine({'name': docker_container.name + '-' + replica_number|string }) }}"
+
+- name: Foreach docker_container_existing, stop the container
+  ansible.builtin.include_tasks: tasks/docker_container.yml
+  vars:
+    item: "{{ {} | combine({'name': docker_container_existing_name, 'state': 'absent'}) }}"
+  loop: "{{ docker_containers_existing.stdout_lines }}"
+  loop_control:
+    loop_var: docker_container_existing_name

@@ -1,7 +1,10 @@
+- name: Debug item
+  debug:
+    var: item
 - name: Create Docker containers
   community.docker.docker_container:
-    name: "{{ item.name + '-' + replica_number }}"
-    image: "{{ item.image }}"
+    name: "{{ item.name }}"
+    image: "{{ item.image | default('') }}"
     volumes: "{{ item.volumes | default([]) }}"
     networks: "{{ item.networks | default([]) }}"
     ports: "{{ item.ports | default(omit) }}"
@@ -76,6 +79,7 @@
     runtime: "{{ item.runtime | default(omit) }}"
     security_opts: "{{ item.security_opts | default([]) }}"
     ssl_version: "{{ item.ssl_version | default(omit) }}"
+    state: "{{ item.state | default('started') }}"
     stop_signal: "{{ item.stop_signal | default(omit) }}"
     stop_timeout: "{{ item.stop_timeout | default(omit) }}"
     sysctls: "{{ item.sysctls | default({}) }}"
