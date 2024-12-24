@@ -1,0 +1,123 @@
+pipeline {
+    agent none
+    environment {
+        GHCR_REGISTRY = 'ghcr.io'
+        // GHCR_REPOSITORY = 'your-github-username/your-image-name' # Actually, get this dynamically from Jenkins env vars
+        GHCR_REPOSITORY = "${env.GITHUB_REPOSITORY_OWNER}/${env.GITHUB_REPOSITORY_NAME}"
+        GHCR_CREDENTIALS_ID = 'ghcr-pat-credentials-id' // Jenkins Credentials for GitHub PAT
+    }
+    stages {
+        stage('Dump all env vars') {
+            agent any
+            steps {
+                script {
+                    env.each { k, v ->
+                        echo "${k}=${v}"
+                    }
+                }
+            }
+        }
+    }
+    // stages {
+    //     stage('Check for Tag') {
+    //         agent any
+    //         when {
+    //             expression {
+    //                 // Only run if the GIT_BRANCH is a tag (refs/tags/<tag-name>)
+    //                 env.GIT_BRANCH.startsWith('refs/tags/')
+    //             }
+    //         }
+    //         steps {
+    //             script {
+    //                 // Extract the tag name (e.g., v1.0.0) from the full ref (refs/tags/v1.0.0)
+    //                 env.TAG_NAME = env.GIT_BRANCH.replace('refs/tags/', '')
+    //                 echo "Running pipeline for tag: ${env.TAG_NAME}"
+    //             }
+    //         }
+    //     }
+
+    //     stage('Build and Push Images') {
+    //         parallel {
+    //             stage('Build for x86_64') {
+    //                 agent { label 'x86_64' }
+    //                 when {
+    //                     expression {
+    //                         // Only run this stage if it's a tag
+    //                         env.GIT_BRANCH.startsWith('refs/tags/')
+    //                     }
+    //                 }
+    //                 steps {
+    //                     script {
+    //                         withCredentials([usernamePassword(credentialsId: GHCR_CREDENTIALS_ID,
+    //                                                          usernameVariable: 'GHCR_USER',
+    //                                                          passwordVariable: 'GHCR_PAT')]) {
+    //                             sh """
+    //                             echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
+
+    //                             docker buildx create --use --name multiarch-builder || true
+    //                             docker buildx inspect multiarch-builder --bootstrap
+    //                             docker buildx build --platform linux/amd64 \
+    //                                 -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
+    //                                 --push .
+    //                             """
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //             stage('Build for ARM64') {
+    //                 agent { label 'arm64' }
+    //                 when {
+    //                     expression {
+    //                         // Only run this stage if it's a tag
+    //                         env.GIT_BRANCH.startsWith('refs/tags/')
+    //                     }
+    //                 }
+    //                 steps {
+    //                     script {
+    //                         withCredentials([usernamePassword(credentialsId: GHCR_CREDENTIALS_ID,
+    //                                                          usernameVariable: 'GHCR_USER',
+    //                                                          passwordVariable: 'GHCR_PAT')]) {
+    //                             sh """
+    //                             echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
+
+    //                             docker buildx create --use --name multiarch-builder || true
+    //                             docker buildx inspect multiarch-builder --bootstrap
+    //                             docker buildx build --platform linux/arm64 \
+    //                                 -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 \
+    //                                 --push .
+    //                             """
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     stage('Create and Push Manifest') {
+    //         agent { label 'x86_64' } // Or use any node with Docker CLI
+    //         when {
+    //             expression {
+    //                 // Only run this stage if it's a tag
+    //                 env.GIT_BRANCH.startsWith('refs/tags/')
+    //             }
+    //         }
+    //         steps {
+    //             script {
+    //                 withCredentials([usernamePassword(credentialsId: GHCR_CREDENTIALS_ID,
+    //                                                  usernameVariable: 'GHCR_USER',
+    //                                                  passwordVariable: 'GHCR_PAT')]) {
+    //                     sh """
+    //                     echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
+
+    //                     docker manifest create ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
+    //                         ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
+    //                         ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64
+
+    //                     docker manifest push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}
+    //                     """
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+}
