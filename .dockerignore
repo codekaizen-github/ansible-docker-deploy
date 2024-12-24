@@ -8,3 +8,4 @@ docker-compose.dev.yml
 Dockerfile
 ansible/inventory
 ignore
+examples
