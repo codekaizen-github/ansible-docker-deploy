@@ -49,8 +49,8 @@ pipeline {
 
         // stage('Build and Push Images') {
         //     parallel {
-        //         stage('Build for x86_64') {
-        //             agent { label 'x86_64' }
+        //         stage('Build for amd64') {
+        //             agent { label 'amd64' }
         //             when {
         //                 expression {
         //                     // Only run this stage if it's a tag
@@ -105,7 +105,7 @@ pipeline {
         // }
 
         // stage('Create and Push Manifest') {
-        //     agent { label 'x86_64' } // Or use any node with Docker CLI
+        //     agent { label 'amd64' } // Or use any node with Docker CLI
         //     when {
         //         expression {
         //             // Only run this stage if it's a tag
