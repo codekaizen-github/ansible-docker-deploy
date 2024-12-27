@@ -98,7 +98,7 @@ pipeline {
                 }
             }
         }
-
+        // Test
         // stage('Create and Push Manifest') {
         //     agent { label 'amd64' } // Or use any node with Docker CLI
         //     when {
