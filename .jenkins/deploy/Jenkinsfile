@@ -7,7 +7,6 @@ pipeline {
         GHCR_CREDENTIALS_ID = 'jenkins-github-ghcr-pat-token-andrewjdawes' // Jenkins Credentials ID for a GitHub PAT Token with read/write access to GHCR packages
     }
     stages {
-        when
         stage('Dump env using a sh command') {
             agent any
             steps {
