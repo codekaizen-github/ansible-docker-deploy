@@ -24,6 +24,7 @@ pipeline {
                     }
                 }
             }
+            // Also, check out this way to detect if you are building a tag or not: https://www.youtube.com/watch?v=saiCjlJpfdA
         }
         stage('Define vars') {
             agent any
