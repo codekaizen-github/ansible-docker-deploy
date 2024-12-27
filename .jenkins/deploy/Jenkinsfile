@@ -1,7 +1,7 @@
 pipeline {
     agent none
     environment {
-        GHCR_REGISTRY = 'ghcr.io'
+        GHCR_REGISTRY = 'ghcr.io' // GitHub Container Registry
         GHCR_USER = 'ASDFASDF' // This can technically be anything. The GitHub PAT is what actually authenticates to GHCR.
         // GHCR_REPOSITORY = 'your-github-username/your-image-name' # Actually, get this dynamically from Jenkins env vars
         GHCR_CREDENTIALS_ID = 'jenkins-github-ghcr-pat-token-andrewjdawes' // Jenkins Credentials ID for a GitHub PAT Token with read/write access to GHCR packages
