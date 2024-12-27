@@ -20,7 +20,7 @@ pipeline {
                     if (!env.GIT_BRANCH.startsWith('refs/tags/')) {
                         echo "Condition not met. Exiting pipeline with 'NOT_BUILT' status."
                         currentBuild.result = 'NOT_BUILT'
-                        error("No changes detected; exiting pipeline.")
+                        debug("No changes detected; exiting pipeline.")
                     }
                 }
             }
