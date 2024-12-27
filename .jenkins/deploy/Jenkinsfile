@@ -106,9 +106,8 @@ pipeline {
             }
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: GHCR_CREDENTIALS_ID,
-                                                     usernameVariable: 'GHCR_USER',
-                                                     passwordVariable: 'GHCR_PAT')]) {
+                    withCredentials([string(credentialsId: GHCR_CREDENTIALS_ID,
+                                                        variable: 'GHCR_PAT')]) {
                         sh '''
                         echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
 
