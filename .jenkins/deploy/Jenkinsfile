@@ -17,8 +17,8 @@ pipeline {
         stage('Exit early if not buildingTag()') {
             agent any
             when {
-                expression {
-                    return !buildingTag()
+                not {
+                    buildingTag()
                 }
             }
             steps {
