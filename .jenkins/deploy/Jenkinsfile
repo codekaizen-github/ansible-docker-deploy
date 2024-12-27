@@ -2,19 +2,22 @@ pipeline {
     agent none
     environment {
         GHCR_REGISTRY = 'ghcr.io'
-        GHCR_USER = 'ASDF'
+        GHCR_USER = 'ASDFASDF' // This can technically be anything. The GitHub PAT is what actually authenticates to GHCR.
         // GHCR_REPOSITORY = 'your-github-username/your-image-name' # Actually, get this dynamically from Jenkins env vars
-        GHCR_CREDENTIALS_ID = 'jenkins-github-ghcr-pat-token-andrewjdawes' // Jenkins Credentials for GitHub PAT
+        GHCR_CREDENTIALS_ID = 'jenkins-github-ghcr-pat-token-andrewjdawes' // Jenkins Credentials ID for a GitHub PAT Token with read/write access to GHCR packages
     }
     stages {
+        stage('Dump env using a sh command') {
+            agent any
+            steps {
+                sh 'env'
+            }
+        }
         stage('Define vars') {
             agent any
-            // when {
-            //     expression {
-            //         // Only run if the GIT_BRANCH is a tag (refs/tags/<tag-name>)
-            //         env.GIT_BRANCH.startsWith('refs/tags/')
-            //     }
-            // }
+            when {
+                env.GIT_BRANCH.startsWith('refs/tags/')
+            }
             steps {
                 script {
                     def gitUrl = env.GIT_URL
@@ -26,31 +29,21 @@ pipeline {
                     } else {
                         error "Failed to extract owner and repo from GIT_URL"
                     }
-                    // env.TAG_NAME = env.GIT_BRANCH.replace('refs/tags/', '')
-                    // Use the commit SHA for the tag name
-                    env.TAG_NAME = env.GIT_COMMIT.take(7)
+                    // Use the Git ref name for the image name
+                    env.TAG_NAME = env.GIT_BRANCH.replace('refs/tags/', '')
+                    // env.TAG_NAME = env.GIT_COMMIT.take(7)
                     env.GHCR_REPOSITORY = "${env.GITHUB_REPOSITORY_OWNER}/${env.GITHUB_REPOSITORY_NAME}"
                     env.SHOULD_RUN = true
                 }
             }
         }
-
-        stage('Dump all env vars') {
-            agent any
-            steps {
-                sh "env"
-            }
-        }
-
         stage('Build and Push Images') {
+            when {
+                expression { env.SHOULD_RUN }
+            }
             parallel {
                 stage('Build for amd64') {
                     agent { label 'docker && amd64' }
-                    when {
-                        expression {
-                            env.SHOULD_RUN
-                        }
-                    }
                     steps {
                         script {
                             withCredentials([string(credentialsId: GHCR_CREDENTIALS_ID,
@@ -74,11 +67,6 @@ pipeline {
                 }
                 stage('Build for arm64') {
                     agent { label 'docker && arm64' }
-                    when {
-                        expression {
-                            env.SHOULD_RUN
-                        }
-                    }
                     steps {
                         script {
                             withCredentials([string(credentialsId: GHCR_CREDENTIALS_ID,
@@ -102,14 +90,11 @@ pipeline {
                 }
             }
         }
-        // Test
         stage('Create and Push Manifest') {
-            agent { label 'docker' } // Or use any node with Docker CLI
             when {
-                expression {
-                    env.SHOULD_RUN
-                }
+                expression { env.SHOULD_RUN }
             }
+            agent { label 'docker' } // Or use any node with Docker CLI
             steps {
                 script {
                     withCredentials([string(credentialsId: GHCR_CREDENTIALS_ID,
