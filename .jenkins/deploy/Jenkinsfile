@@ -59,11 +59,13 @@ pipeline {
                                 echo $GHCR_PAT | wc -m
                                 echo "${GHCR_PAT}" | docker login "${GHCR_REGISTRY}" -u "${GHCR_USER}" --password-stdin
 
-                                docker buildx create --use --name multiarch-builder || true
-                                docker buildx inspect multiarch-builder --bootstrap
-                                docker buildx build --platform linux/amd64 \
-                                   -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
-                                   --push .
+                                # docker buildx create --use --name multiarch-builder || true
+                                # docker buildx inspect multiarch-builder --bootstrap
+                                # docker buildx build --platform linux/amd64 \
+                                #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
+                                #    --push .
+                                # Use docker build instead of docker buildx
+                                docker build -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 .
                                 '''
                             }
                         }
@@ -84,11 +86,13 @@ pipeline {
                                 echo $GHCR_PAT | wc -m
                                 echo "${GHCR_PAT}" | docker login "${GHCR_REGISTRY}" -u "${GHCR_USER}" --password-stdin
 
-                                docker buildx create --use --name multiarch-builder || true
-                                docker buildx inspect multiarch-builder --bootstrap
-                                docker buildx build --platform linux/arm64 \
-                                   -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 \
-                                   --push .
+                                # docker buildx create --use --name multiarch-builder || true
+                                # docker buildx inspect multiarch-builder --bootstrap
+                                # docker buildx build --platform linux/arm64 \
+                                #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 \
+                                #    --push .
+                                # Use docker build instead of docker buildx
+                                docker build -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 .
                                 '''
                             }
                         }
@@ -114,6 +118,12 @@ pipeline {
                         docker manifest create ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
                             ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
                             ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64
+
+                        docker manifest annotate ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
+                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 --os linux --arch amd64
+
+                        docker manifest annotate ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
+                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 --os linux --arch arm64
 
                         docker manifest push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}
                         '''
