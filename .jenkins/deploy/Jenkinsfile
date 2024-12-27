@@ -16,16 +16,21 @@ pipeline {
         // Check out this way to detect if you are building a tag or not: https://www.youtube.com/watch?v=saiCjlJpfdA
         stage('Exit early if not buildingTag()') {
             agent any
+            when {
+                expression {
+                    return !buildingTag()
+                }
+            }
             steps {
                 script {
-                    echo "GIT_BRANCH: ${env.GIT_BRANCH}"
-                    echo "Building tag? ${buildingTag()}"
-                    if (!buildingTag()) {
+                    // echo "GIT_BRANCH: ${env.GIT_BRANCH}"
+                    // echo "Building tag? ${buildingTag()}"
+                    // if (!buildingTag()) {
                         echo "Not building a tag. Exiting pipeline with 'NOT_BUILT' status."
                         currentBuild.result = 'NOT_BUILT'
                         echo "No changes detected; exiting pipeline."
                         return
-                    }
+                    // }
                 }
             }
         }
