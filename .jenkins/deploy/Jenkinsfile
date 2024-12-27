@@ -66,6 +66,7 @@ pipeline {
                                 #    --push .
                                 # Use docker build instead of docker buildx
                                 docker build -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 .
+                                docker push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64
                                 '''
                             }
                         }
@@ -93,6 +94,7 @@ pipeline {
                                 #    --push .
                                 # Use docker build instead of docker buildx
                                 docker build -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 .
+                                docker push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64
                                 '''
                             }
                         }
