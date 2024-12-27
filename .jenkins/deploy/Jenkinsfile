@@ -1,12 +1,11 @@
 pipeline {
     agent none
     environment {
-        SHOULD_RUN = false
         TAG_NAME = ''
         GHCR_REGISTRY = 'ghcr.io'
-        GHCR_USER = 'AndrewJDawes'
+        GHCR_USER = 'ASDF'
         // GHCR_REPOSITORY = 'your-github-username/your-image-name' # Actually, get this dynamically from Jenkins env vars
-        GHCR_CREDENTIALS_ID = 'jenkins-github-gchr-pat-token-andrewjdawes' // Jenkins Credentials for GitHub PAT
+        GHCR_CREDENTIALS_ID = 'jenkins-github-ghcr-pat-token-andrewjdawes' // Jenkins Credentials for GitHub PAT
     }
     stages {
         stage('Define vars') {
@@ -50,23 +49,23 @@ pipeline {
                     agent { label 'amd64' }
                     when {
                         expression {
-                            // Only run this stage if it's a tag
-                            env.SHOULD_RUN == true
+                            env.SHOULD_RUN
                         }
                     }
                     steps {
                         script {
                             withCredentials([string(credentialsId: GHCR_CREDENTIALS_ID,
                                                              variable: 'GHCR_PAT')]) {
-                                sh """
-                                echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
+                                sh '''
+                                echo $GHCR_PAT | wc -m
+                                echo "${GHCR_PAT}" | docker login "${GHCR_REGISTRY}" -u "${GHCR_USER}" --password-stdin
 
                                 # docker buildx create --use --name multiarch-builder || true
                                 # docker buildx inspect multiarch-builder --bootstrap
                                 # docker buildx build --platform linux/amd64 \
                                 #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
                                 #    --push .
-                                """
+                                '''
                             }
                         }
                     }
@@ -75,23 +74,23 @@ pipeline {
                     agent { label 'arm64' }
                     when {
                         expression {
-                            // Only run this stage if it's a tag
-                            env.SHOULD_RUN == true
+                            env.SHOULD_RUN
                         }
                     }
                     steps {
                         script {
                             withCredentials([string(credentialsId: GHCR_CREDENTIALS_ID,
                                                              variable: 'GHCR_PAT')]) {
-                                sh """
-                                echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
+                                sh '''
+                                echo $GHCR_PAT | wc -m
+                                echo "${GHCR_PAT}" | docker login "${GHCR_REGISTRY}" -u "${GHCR_USER}" --password-stdin
 
                                 # docker buildx create --use --name multiarch-builder || true
                                 # docker buildx inspect multiarch-builder --bootstrap
                                 # docker buildx build --platform linux/arm64 \
                                 #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 \
                                 #    --push .
-                                """
+                                '''
                             }
                         }
                     }
@@ -113,7 +112,7 @@ pipeline {
         //                                              usernameVariable: 'GHCR_USER',
         //                                              passwordVariable: 'GHCR_PAT')]) {
         //                 sh """
-        //                 echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
+        //                 echo "$GHCR_PAT" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
 
         //                 docker manifest create ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
         //                     ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
