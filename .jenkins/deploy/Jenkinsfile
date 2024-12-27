@@ -1,7 +1,6 @@
 pipeline {
     agent none
     environment {
-        TAG_NAME = ''
         GHCR_REGISTRY = 'ghcr.io'
         GHCR_USER = 'ASDF'
         // GHCR_REPOSITORY = 'your-github-username/your-image-name' # Actually, get this dynamically from Jenkins env vars
