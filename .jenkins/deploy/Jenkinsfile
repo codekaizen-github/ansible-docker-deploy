@@ -13,7 +13,7 @@ pipeline {
                 sh 'env'
             }
         }
-        // Also, check out this way to detect if you are building a tag or not: https://www.youtube.com/watch?v=saiCjlJpfdA
+        // Check out this way to detect if you are building a tag or not: https://www.youtube.com/watch?v=saiCjlJpfdA
         stage('Exit early if not buildingTag()') {
             agent any
             steps {
@@ -21,7 +21,7 @@ pipeline {
                     if (!buildingTag()) {
                         echo "Not building a tag. Exiting pipeline with 'NOT_BUILT' status."
                         currentBuild.result = 'NOT_BUILT'
-                        debug("No changes detected; exiting pipeline.")
+                        echo "No changes detected; exiting pipeline."
                         return
                     }
                 }
