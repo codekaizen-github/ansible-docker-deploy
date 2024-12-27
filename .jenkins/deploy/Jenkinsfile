@@ -11,12 +11,12 @@ pipeline {
     stages {
         stage('Define vars') {
             agent any
-            when {
-                expression {
-                    // Only run if the GIT_BRANCH is a tag (refs/tags/<tag-name>)
-                    env.GIT_BRANCH.startsWith('refs/tags/')
-                }
-            }
+            // when {
+            //     expression {
+            //         // Only run if the GIT_BRANCH is a tag (refs/tags/<tag-name>)
+            //         env.GIT_BRANCH.startsWith('refs/tags/')
+            //     }
+            // }
             steps {
                 script {
                     def gitUrl = env.GIT_URL
@@ -28,7 +28,9 @@ pipeline {
                     } else {
                         error "Failed to extract owner and repo from GIT_URL"
                     }
-                    env.TAG_NAME = env.GIT_BRANCH.replace('refs/tags/', '')
+                    // env.TAG_NAME = env.GIT_BRANCH.replace('refs/tags/', '')
+                    // Use the commit SHA for the tag name
+                    env.TAG_NAME = env.GIT_COMMIT.take(7)
                     env.GHCR_REPOSITORY = "${env.GITHUB_REPOSITORY_OWNER}/${env.GITHUB_REPOSITORY_NAME}"
                     env.SHOULD_RUN = true
                 }
