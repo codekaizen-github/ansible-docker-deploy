@@ -46,7 +46,7 @@ pipeline {
         stage('Build and Push Images') {
             parallel {
                 stage('Build for amd64') {
-                    agent { label 'amd64' }
+                    agent { label 'docker && amd64' }
                     when {
                         expression {
                             env.SHOULD_RUN
@@ -60,18 +60,18 @@ pipeline {
                                 echo $GHCR_PAT | wc -m
                                 echo "${GHCR_PAT}" | docker login "${GHCR_REGISTRY}" -u "${GHCR_USER}" --password-stdin
 
-                                # docker buildx create --use --name multiarch-builder || true
-                                # docker buildx inspect multiarch-builder --bootstrap
-                                # docker buildx build --platform linux/amd64 \
-                                #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
-                                #    --push .
+                                docker buildx create --use --name multiarch-builder || true
+                                docker buildx inspect multiarch-builder --bootstrap
+                                docker buildx build --platform linux/amd64 \
+                                   -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
+                                   --push .
                                 '''
                             }
                         }
                     }
                 }
                 stage('Build for arm64') {
-                    agent { label 'arm64' }
+                    agent { label 'docker && arm64' }
                     when {
                         expression {
                             env.SHOULD_RUN
@@ -85,11 +85,11 @@ pipeline {
                                 echo $GHCR_PAT | wc -m
                                 echo "${GHCR_PAT}" | docker login "${GHCR_REGISTRY}" -u "${GHCR_USER}" --password-stdin
 
-                                # docker buildx create --use --name multiarch-builder || true
-                                # docker buildx inspect multiarch-builder --bootstrap
-                                # docker buildx build --platform linux/arm64 \
-                                #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 \
-                                #    --push .
+                                docker buildx create --use --name multiarch-builder || true
+                                docker buildx inspect multiarch-builder --bootstrap
+                                docker buildx build --platform linux/arm64 \
+                                   -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 \
+                                   --push .
                                 '''
                             }
                         }
@@ -98,31 +98,30 @@ pipeline {
             }
         }
         // Test
-        // stage('Create and Push Manifest') {
-        //     agent { label 'amd64' } // Or use any node with Docker CLI
-        //     when {
-        //         expression {
-        //             // Only run this stage if it's a tag
-        //             env.GIT_BRANCH.startsWith('refs/tags/')
-        //         }
-        //     }
-        //     steps {
-        //         script {
-        //             withCredentials([usernamePassword(credentialsId: GHCR_CREDENTIALS_ID,
-        //                                              usernameVariable: 'GHCR_USER',
-        //                                              passwordVariable: 'GHCR_PAT')]) {
-        //                 sh """
-        //                 echo "$GHCR_PAT" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
+        stage('Create and Push Manifest') {
+            agent { label 'docker' } // Or use any node with Docker CLI
+            when {
+                expression {
+                    env.SHOULD_RUN
+                }
+            }
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: GHCR_CREDENTIALS_ID,
+                                                     usernameVariable: 'GHCR_USER',
+                                                     passwordVariable: 'GHCR_PAT')]) {
+                        sh '''
+                        echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
 
-        //                 docker manifest create ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
-        //                     ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
-        //                     ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64
+                        docker manifest create ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
+                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
+                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64
 
-        //                 docker manifest push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
+                        docker manifest push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}
+                        '''
+                    }
+                }
+            }
+        }
     }
 }
