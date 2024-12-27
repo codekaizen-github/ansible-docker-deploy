@@ -13,11 +13,20 @@ pipeline {
                 sh 'env'
             }
         }
+        stage('Determine if should continue') {
+            agent any
+            steps {
+                script {
+                    if (!env.GIT_BRANCH.startsWith('refs/tags/')) {
+                        echo "Condition not met. Exiting pipeline with 'NOT_BUILT' status."
+                        currentBuild.result = 'NOT_BUILT'
+                        error("No changes detected; exiting pipeline.")
+                    }
+                }
+            }
+        }
         stage('Define vars') {
             agent any
-            when {
-                env.GIT_BRANCH.startsWith('refs/tags/')
-            }
             steps {
                 script {
                     def gitUrl = env.GIT_URL
@@ -33,14 +42,10 @@ pipeline {
                     env.TAG_NAME = env.GIT_BRANCH.replace('refs/tags/', '')
                     // env.TAG_NAME = env.GIT_COMMIT.take(7)
                     env.GHCR_REPOSITORY = "${env.GITHUB_REPOSITORY_OWNER}/${env.GITHUB_REPOSITORY_NAME}"
-                    env.SHOULD_RUN = true
                 }
             }
         }
         stage('Build and Push Images') {
-            when {
-                expression { env.SHOULD_RUN }
-            }
             parallel {
                 stage('Build for amd64') {
                     agent { label 'docker && amd64' }
@@ -91,9 +96,6 @@ pipeline {
             }
         }
         stage('Create and Push Manifest') {
-            when {
-                expression { env.SHOULD_RUN }
-            }
             agent { label 'docker' } // Or use any node with Docker CLI
             steps {
                 script {
