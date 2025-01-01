@@ -23,14 +23,11 @@ pipeline {
             }
             steps {
                 script {
-                    // echo "GIT_BRANCH: ${env.GIT_BRANCH}"
-                    // echo "Building tag? ${buildingTag()}"
-                    // if (!buildingTag()) {
-                        echo "Not building a tag. Exiting pipeline with 'NOT_BUILT' status."
-                        currentBuild.result = 'NOT_BUILT'
-                        error("No changes detected; exiting pipeline.")
-                        return
-                    // }
+                    echo "Not building a tag. Exiting pipeline with 'NOT_BUILT' status."
+                    currentBuild.result = 'NOT_BUILT'
+                    error("No changes detected; exiting pipeline.")
+                    exit 1
+                    return
                 }
             }
         }
@@ -72,7 +69,7 @@ pipeline {
                                 #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
                                 #    --push .
                                 # Use docker build instead of docker buildx
-                                docker build -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 .
+                                docker build --target base -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 .
                                 docker push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64
                                 '''
                             }
@@ -95,7 +92,7 @@ pipeline {
                                 #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 \
                                 #    --push .
                                 # Use docker build instead of docker buildx
-                                docker build -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 .
+                                docker build --target base -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 .
                                 docker push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64
                                 '''
                             }
