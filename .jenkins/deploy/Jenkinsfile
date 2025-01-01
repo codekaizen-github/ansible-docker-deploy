@@ -121,9 +121,9 @@ pipeline {
                         sh '''
                         echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
 
-                        docker manifest create --amend ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME} \
+                        docker manifest create ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME} \
                             ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-amd64 \
-                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-arm64
+                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-arm64 --amend
 
                         docker manifest annotate ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME} \
                             ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-amd64 --os linux --arch amd64
