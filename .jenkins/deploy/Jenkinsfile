@@ -14,16 +14,19 @@ pipeline {
             }
         }
         // Check out this way to detect if you are building a tag or not: https://www.youtube.com/watch?v=saiCjlJpfdA
-        stage('Exit early if not buildingTag()') {
+        stage('Exit early') {
             agent any
             when {
                 not {
-                    buildingTag()
+                    anyOf {
+                        buildingTag();
+                        branch 'main';
+                    }
                 }
             }
             steps {
                 script {
-                    echo "Not building a tag. Exiting pipeline with 'NOT_BUILT' status."
+                    echo "Not building. Exiting pipeline with 'NOT_BUILT' status."
                     currentBuild.result = 'NOT_BUILT'
                     error("No changes detected; exiting pipeline.")
                     exit 1
@@ -47,8 +50,16 @@ pipeline {
                     // Use the Git ref name for the image name
                     // env.TAG_NAME = env.GIT_BRANCH.replace('refs/tags/', '')
                     // env.TAG_NAME = env.GIT_COMMIT.take(7)
+                    // When building the main branch, use the 'latest' tag
+                    env.DYNAMIC_TAG_NAME = env.GIT_BRANCH == 'main' ? 'latest' : env.TAG_NAME
                     env.GHCR_REPOSITORY = "${env.GITHUB_REPOSITORY_OWNER}/${env.GITHUB_REPOSITORY_NAME}"
                 }
+            }
+        }
+        stage('Dump env using a sh command') {
+            agent any
+            steps {
+                sh 'env'
             }
         }
         stage('Build and Push Images') {
@@ -66,11 +77,11 @@ pipeline {
                                 # docker buildx create --use --name multiarch-builder || true
                                 # docker buildx inspect multiarch-builder --bootstrap
                                 # docker buildx build --platform linux/amd64 \
-                                #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
+                                #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-amd64 \
                                 #    --push .
                                 # Use docker build instead of docker buildx
-                                docker build --target base -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 .
-                                docker push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64
+                                docker build --target base -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-amd64 .
+                                docker push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-amd64
                                 '''
                             }
                         }
@@ -89,11 +100,11 @@ pipeline {
                                 # docker buildx create --use --name multiarch-builder || true
                                 # docker buildx inspect multiarch-builder --bootstrap
                                 # docker buildx build --platform linux/arm64 \
-                                #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 \
+                                #    -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-arm64 \
                                 #    --push .
                                 # Use docker build instead of docker buildx
-                                docker build --target base -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 .
-                                docker push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64
+                                docker build --target base -t ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-arm64 .
+                                docker push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-arm64
                                 '''
                             }
                         }
@@ -110,17 +121,17 @@ pipeline {
                         sh '''
                         echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
 
-                        docker manifest create ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
-                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 \
-                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64
+                        docker manifest create --amend ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME} \
+                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-amd64 \
+                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-arm64
 
-                        docker manifest annotate ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
-                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-amd64 --os linux --arch amd64
+                        docker manifest annotate ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME} \
+                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-amd64 --os linux --arch amd64
 
-                        docker manifest annotate ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME} \
-                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}-arm64 --os linux --arch arm64
+                        docker manifest annotate ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME} \
+                            ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-arm64 --os linux --arch arm64
 
-                        docker manifest push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${TAG_NAME}
+                        docker manifest push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}
                         '''
                     }
                 }
