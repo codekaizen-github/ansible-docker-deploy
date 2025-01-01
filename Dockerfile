@@ -17,7 +17,7 @@ COPY . /workspace
 
 RUN ansible-galaxy install -r /workspace/ansible/requirements.yml
 
-ENTRYPOINT ["ansible-playbook", "-i", "/workspace/ansible/inventory/hosts.yml", "-vvv", "/workspace/ansible/docker_services.yml"]
+ENTRYPOINT ["ansible-playbook", "-i", "/workspace/ansible/inventory/hosts.yml", "-vv", "/workspace/ansible/docker_services.yml"]
 
 FROM base AS dev
 
