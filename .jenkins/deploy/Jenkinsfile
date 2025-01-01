@@ -92,6 +92,8 @@ pipeline {
                         sh '''
                         echo "${GHCR_PAT}" | docker login ${GHCR_REGISTRY} -u "${GHCR_USER}" --password-stdin
 
+                        docker manifest rm ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME} || true
+
                         docker pull ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-amd64
                         docker pull ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}-arm64
 
@@ -112,7 +114,7 @@ pipeline {
                         # dump the manifest to see what it looks like
                         docker manifest inspect ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}
 
-                        docker manifest push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME}
+                        docker manifest push ${GHCR_REGISTRY}/${GHCR_REPOSITORY}:${DYNAMIC_TAG_NAME} --purge
                         '''
                     }
                 }
