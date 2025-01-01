@@ -51,7 +51,6 @@ pipeline {
                     // env.TAG_NAME = env.GIT_BRANCH.replace('refs/tags/', '')
                     // env.TAG_NAME = env.GIT_COMMIT.take(7)
                     // When building the main branch, use the 'latest' tag
-                    // Test
                     env.DYNAMIC_TAG_NAME = env.GIT_BRANCH == 'main' ? 'latest' : env.TAG_NAME
                     env.GHCR_REPOSITORY = "${env.GITHUB_REPOSITORY_OWNER}/${env.GITHUB_REPOSITORY_NAME}"
                 }
