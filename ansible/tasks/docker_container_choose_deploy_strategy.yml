@@ -1,0 +1,22 @@
+- name: Assert that required vars are defined
+  assert:
+    that:
+      - docker_container is defined
+
+- name: Debug docker_container
+  debug:
+    var: docker_container
+
+- name: Set deploy_strategy variable based on docker_container.deploy_strategy
+  set_fact:
+    deploy_strategy: "{{ docker_container.deploy_strategy | default('blue_green') }}"
+
+- name: When deploy_strategy is blue_green, include docker_container_deploy_blue_green task
+  ansible.builtin.include_tasks: tasks/docker_container_deploy_blue_green.yml
+  when: deploy_strategy == 'blue_green'
+
+- name: When deploy_strategy is recreate, include docker_container_deploy_recreate task
+  ansible.builtin.include_tasks: tasks/docker_container_deploy_recreate.yml
+  vars:
+    item: "{{ docker_container }}"
+  when: deploy_strategy == 'recreate'
