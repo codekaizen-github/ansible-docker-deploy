@@ -2,15 +2,9 @@
 - name: Start Docker Containers
   hosts: "{{ hosts_override | default('docker_containers') }}"
   tasks:
-      - name: Debug all variables
-        debug:
-            var: vars
-      # - name: Fail
-      #   fail:
-      #       msg: "This is a test"
       - name: Create Docker containers
         ansible.builtin.include_tasks:
-            file: tasks/docker_container_replicas.yml
+            file: tasks/docker_container_deploy_strategy.yml
         loop: "{{ docker_containers }}"
         loop_control:
             loop_var: docker_container

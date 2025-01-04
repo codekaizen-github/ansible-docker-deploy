@@ -2,6 +2,7 @@
   assert:
     that:
       - docker_container is defined
+      - build_number is defined
       - required_docker_label is defined
       - required_docker_label is string
       - required_docker_label | length > 0
@@ -25,7 +26,7 @@
   vars:
     replica_count: "{{ docker_container.replica_count | default(1) | int }}"
     # pass in docker_container. but change the name to append the replica_number
-    item: "{{ docker_container | combine({'name': docker_container.name + '-' + replica_number|string }) }}"
+    item: "{{ docker_container | combine({'name': docker_container.name + '-' + build_number + '-' + replica_number|string }) }}"
 
 - name: Foreach docker_container_existing, stop the container
   ansible.builtin.include_tasks: tasks/docker_container.yml

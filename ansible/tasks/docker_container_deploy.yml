@@ -1,0 +1,54 @@
+- name: Assert that required vars are defined
+  assert:
+    that:
+      - docker_container is defined
+      - required_docker_label is defined
+      - required_docker_label is string
+      - required_docker_label | length > 0
+
+- name: Use Docker CLI to list all containers with a specific tag
+  shell: docker ps -a --filter "label={{ required_docker_label }}" {{ docker_container.filters_string | default('') }} --format \{\{.Names\}\}
+  register: docker_containers_existing
+  changed_when: false
+  failed_when: false
+
+- name: Set docker_container_names to empty array
+  set_fact:
+    docker_container_names: []
+
+- name: Generate a list of docker container names to create based on number of replicas
+  set_fact:
+    docker_container_names: "{{ docker_container_names + [docker_container.name + '-' + item|string] }}"
+  loop: "{{ range(1, replica_count|int + 1|int ) }}"
+  loop_control:
+    loop_var: item
+  vars:
+    replica_count: "{{ docker_container.replica_count | default(1) | int }}"
+
+- name: Set docker_containers_to_stop to empty array
+  set_fact:
+    docker_containers_to_stop: []
+
+- name: Generate a list of any docker_containers_existing names that are not in the list of docker_container_names
+  set_fact:
+    docker_containers_to_stop: "{{ docker_containers_to_stop + [item] }}"
+  loop: "{{ docker_containers_existing.stdout_lines }}"
+  loop_control:
+    loop_var: item
+  when: item not in docker_container_names
+
+- name: Create Docker containers
+  ansible.builtin.include_tasks: tasks/docker_container.yml
+  loop: "{{ docker_container_names }}"
+  loop_control:
+    loop_var: docker_container_name
+  vars:
+    item: "{{ docker_container | combine({'name': docker_container_name}) }}"
+
+- name: Stop Docker containers
+  ansible.builtin.include_tasks: tasks/docker_container.yml
+  loop: "{{ docker_containers_to_stop }}"
+  loop_control:
+    loop_var: docker_container_name
+  vars:
+    item: "{{ {} | combine({'name': docker_container_name, 'state': 'absent'}) }}"
