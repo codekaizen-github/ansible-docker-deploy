@@ -1,7 +1,7 @@
 FROM alpine:3 AS base
 
 ARG OWNER=codekaizen-github
-ARG REPO=ansible-docker-blue-green-deploy
+ARG REPO=ansible-docker-deploy
 
 LABEL org.opencontainers.image.source=https://github.com/${OWNER}/${REPO}
 
