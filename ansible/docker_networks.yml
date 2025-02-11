@@ -31,4 +31,4 @@
         tls: "{{ item.tls | default(false) }}"
         tls_hostname: "{{ item.tls_hostname | default('localhost') }}"
         validate_certs: "{{ item.validate_certs | default(false) }}"
-      loop: "{{ docker_networks }}"
+      loop: "{{ docker_networks | default([]) }}"

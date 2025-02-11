@@ -5,6 +5,6 @@
       - name: Create Docker containers
         ansible.builtin.include_tasks:
             file: tasks/docker_container_choose_deploy_strategy.yml
-        loop: "{{ docker_containers }}"
+        loop: "{{ docker_containers | default([]) }}"
         loop_control:
             loop_var: docker_container

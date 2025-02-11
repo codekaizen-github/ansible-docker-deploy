@@ -23,4 +23,4 @@
         tls_hostname: "{{ item.tls_hostname | default(omit) }}"
         use_ssh_client: "{{ item.use_ssh_client | default(false) }}"
         validate_certs: "{{ item.validate_certs | default(false) }}"
-      loop: "{{ docker_volumes }}"
+      loop: "{{ docker_volumes | default([]) }}"
