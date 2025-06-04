@@ -1,3 +1,1 @@
-# ansible-docker-blue-green-deploy
-
--   Test
+# ansible-docker-deploy
